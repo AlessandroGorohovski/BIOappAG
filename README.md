@@ -1,2 +1,2 @@
 # BIOappAG
-Bioinformatics tools
+Bioinformatics tools for general tasks
