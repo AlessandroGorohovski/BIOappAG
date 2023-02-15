@@ -81,8 +81,8 @@ sub collect_utrs {
 
 		# по цепи (strand), обозначить тип UTR
 		my( $left_utr_type, $right_utr_type ) = $gene->{'transcripts'}{$id}{'strand'} eq '+' ?
-																('five_prime_UTR',  'three_prime_UTR') :
-																('three_prime_UTR', 'five_prime_UTR');
+				('five_prime_UTR',  'three_prime_UTR') :
+				('three_prime_UTR', 'five_prime_UTR');
 
 		# Перебираем экзоны
 		for my $exon ( @{ $gene->{'transcripts'}{$id}{'exons'} } ){
@@ -113,24 +113,17 @@ sub collect_utrs {
 }
 
 
-=comment
-	Create GFFRecords of UTRs from: utr_start, utr_end, utr_type, exon
-	Add it to the list: utrs (so it appends to the external list variable, does not return anything)
----
-	Создать GFFRecords UTR из: utr_start, utr_end, utr_type, exon
-	Добавляет её в список: utrs (чтобы он добавлялся во внешнюю переменную списка и ничего не возвращал)
-=cut
+#< Create GFFRecords of UTRs from: utr_start, utr_end, utr_type, exon
+# >Создать GFFRecords UTR из: utr_start, utr_end, utr_type, exon
 
 sub add_utr {
 	my( $utr_start, $utr_end, $utr_type, $exon, $utr_data, $utrs ) = @_;
 
 	my $exon_attrs = &parse_gff_attributes( $exon->{'attributes'} );
 
-	my $id_str = 'ID=utr';
-	$id_str .= $1 if $exon_attrs->{'ID'} =~/(\d+)/;
+	my $id_str = 'ID=utr' . ($exon_attrs->{'ID'} =~/(\d+)$/ ? $1:'');
 
-	my $k = $exon->{'seq_id'} . lc($utr_type) . $utr_start . $exon->{'strand'} . $utr_end;
-	$k .= lc($id_str) unless $UNIQ;
+	my $k = $exon->{'seq_id'} . lc($utr_type) . $utr_start . $exon->{'strand'} . $utr_end . ($UNIQ ? '':lc($id_str));
 
 	return if exists $utr_data->{$k};
 	$utr_data->{$k} = undef;
@@ -262,12 +255,12 @@ sub GFFcds {
 	my $id = $retval->{'Parent'};
 
 	# получить самую крайнюю левую границу CDS (левый UTR)
-	$transcript->{ $id }{'cds_Lstart'} = $gff_record->{'start'} if ! exists($transcript->{ $id }{'cds_Lstart'}) or
-																						$transcript->{ $id }{'cds_Lstart'} > $gff_record->{'start'};
+	$transcript->{ $id }{'cds_Lstart'} = $gff_record->{'start'}
+		if ! exists($transcript->{ $id }{'cds_Lstart'}) or $transcript->{ $id }{'cds_Lstart'} > $gff_record->{'start'};
 
 	# получить самую крайнюю правую границу CDS (правый UTR)
-	$transcript->{ $id }{'cds_Rend'} = $gff_record->{'end'} if ! exists($transcript->{ $id }{'cds_Rend'}) or
-																					$transcript->{ $id }{'cds_Rend'} < $gff_record->{'end'};
+	$transcript->{ $id }{'cds_Rend'} = $gff_record->{'end'}
+		if ! exists($transcript->{ $id }{'cds_Rend'}) or $transcript->{ $id }{'cds_Rend'} < $gff_record->{'end'};
 }
 
 
